@@ -1,3 +1,4 @@
+# TODO здесь писать код
 number: int = int(input('Введите число: '))
 
 res_numbers = [num for num in range(1, number + 1, 2)]

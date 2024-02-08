@@ -24,4 +24,33 @@ store = {
     ],
 }
 
-# TODO здесь писать код
+
+def get_purchase_information(info: list[dict[str, int]]
+                             ) -> tuple[int, int]:
+    """
+    Вспомогательная функция для получения общей информации о закупке.
+    Метод получает список словарей (как в store) и считает
+    общие количество и стоимость закупки.
+    :param info: Список словарей с информацией о закупке. Словари имеют вид:
+    {'quantity': ..., 'price': ...}
+    :return: Количество и общая стоимость купленных товаров.
+    """
+    quantity: int = sum([info_dict['quantity']
+                         for info_dict in info])
+    total_price: int = sum([
+        info_dict['quantity'] * info_dict['price']
+        for info_dict in info
+    ])
+
+    return quantity, total_price
+
+
+for good in goods:
+    good_number, good_price = get_purchase_information(
+        info=store[goods[good]]
+    )
+    print('{name} - {number} штук, стоимость - {price} рубля'.format(
+        name=good,
+        number=good_number,
+        price=good_price
+    ))

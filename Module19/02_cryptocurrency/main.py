@@ -44,5 +44,26 @@ data = {
     ]
 }
 
+# 1. Вывести списки ключей и значений словаря
+print('1.1 Список ключей:')
+print([key for key in data])
+print('1.2 Список значений:')
+print([value for value in data.values()])
 
-# TODO здесь писать код
+# 2. В ETH добавить ключ total_diff со значением 100.
+data['ETH']['total_diff'] = 100
+
+# 3. Внутри fst_token_info значение ключа name поменять с fdf на doge.
+data['tokens'][0]['fst_token_info']['name'] = 'doge'
+
+# 4. Удалить total_out из словарей внутри списка tokens и присвоить сумму этих значений в totalOut внутри ETH.
+data['ETH']['total_out'] = sum([
+    data['tokens'][index].pop('total_out')
+    for index, _ in enumerate(data['tokens'])
+])
+
+# 5. Внутри sec_token_info изменить название ключа price на total_price.
+data['tokens'][1]['sec_token_info']['total_price'] =\
+    data['tokens'][1]['sec_token_info'].pop('price')
+
+# print(data)

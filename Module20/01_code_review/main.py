@@ -1,4 +1,7 @@
-students = {
+from typing import Any
+
+
+students: dict[int, dict[str, Any]] = {
     1: {
         'name': 'Bob',
         'surname': 'Vazovski',
@@ -20,25 +23,34 @@ students = {
 }
 
 
-def f(dict):
-    lst = []
-    string = ''
-    for i in dict:
-        lst += (dict[i]['interests'])
-        string += dict[i]['surname']
-    cnt = 0
-    for s in string:
-        cnt += 1
-    return lst, cnt
+def get_interests_and_len_second_names(
+        people: dict[int, dict[str, Any]]
+) -> tuple[set[str], int]:
+    """
+    Функция возвращает множество интересов и
+    длину всех фамилий студентов.
+    :param people: Словарь с информациями о студентах.
+    :return: Список интересов и длину всех фамилий.
+    """
+    # Создадим множество интересов с помощью объединения
+    set_interests: set[str] = set()
+    total_length: int = 0  # Длина всех фамилий
+
+    for student_info in people.values():
+        set_interests = set_interests | set(student_info['interests'])
+        total_length += len(student_info['surname'])
+
+    return set_interests, total_length
 
 
-pairs = []
-for i in students:
-    pairs += (i, students[i]['age'])
+print('Список пар "ID студента - возвраст":',
+      [(student_id, student_info['age'])
+       for student_id, student_info in students.items()])
 
-
-my_lst = f(students)[0]
-l = f(students)[1]
-print(my_lst, l)
-
-# TODO исправить код
+interests, total_len = get_interests_and_len_second_names(
+    students
+)
+print('Полный список интересов всех студентов:',
+      interests)
+print('Общая длина всех фамилий студентов:',
+      total_len)

@@ -60,3 +60,16 @@ def logging(log_file: str) -> Callable:
                     file.write(str(exc) + '\n\n')
         return __wrapper
     return logging_decorator
+
+
+def create_file(file_name: str):
+    """
+    Функция создает файл.
+    :param file_name: Имя файла.
+    :return: Ничего.
+    """
+    try:
+        with open(file_name, 'x', encoding='utf-8') as file:
+            return
+    except FileExistsError:
+        return

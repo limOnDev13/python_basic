@@ -2,8 +2,21 @@
 Модуль отвечает за работу сервера. Является простейшим (и возможно кривым) аналогом.
 """
 import time
-from service import servise
+# from service import service_func
 import os
+
+
+def create_file(file_name: str):
+    """
+    Функция создает файл. Пришлось скопировать сюда, т.к. Powershell не хочет импортировать его из service.
+    :param file_name: Имя файла.
+    :return: Ничего.
+    """
+    try:
+        with open(file_name, 'x', encoding='utf-8') as file:
+            return
+    except FileExistsError:
+        return
 
 
 class Queue:
@@ -16,28 +29,57 @@ class Queue:
         """
         Создает файл queue.txt, если такового нет в директории с сервером.
         """
-        servise.create_file(self.queue_file)
+        create_file(self.queue_file)
 
     def check_queue(self) -> str | None:
         """
         Функция проверяет с периодичностью файл queue.txt на наличие запрашиваемых команд.
         Файл queue.txt является хранилищем очереди команд, которые запрашивают клиенты.
         Команды разделены переносом строки. Если файл не пустой, функция возвращает первую строку из queue.txt.
+        После извлечения команды, он ее удаляет из файла.
         :return: Первую строку из queue.txt, если он не пустой. Иначе - None.
         """
-        with open(self.queue_file, 'r', encoding='utf-8') as queue:
-            data: str = queue.read()
+        first_command: str = ''
+        rest_commands: str = ''
+        empty_file: bool = True
 
-            if data:
-                return data.split('\n')[0]
+        # Файл может быть открыт клиентом, поэтому пытаемся его открыть, пока не откроем
+        while True:
+            try:
+                with open(self.queue_file, 'r', encoding='utf-8') as queue:
+                    data: str = queue.read()
+                    commands: list[str] = data.split('\n')
+                    print(commands)
+
+                    if data:
+                        first_command += commands[0]
+                        rest_commands += '\n'.join(commands[1:])
+                        empty_file = False
+            except IOError:
+                time.sleep(0.1)
+            else:
+                break
+            finally:
+                time.sleep(1)  # Засыпаем, чтобы не нагружать процессор
+
+        if empty_file:
             return None
+        else:
+            # Удалим первую команду из файла
+            while True:
+                try:
+                    with open(self.queue_file, 'w', encoding='utf-8') as queue:
+                        queue.write(rest_commands)
+                        return first_command
+                except IOError:
+                    time.sleep(0.1)
 
 
 class Chat:
     chat_file: str = 'chat.txt'
 
     def __init__(self):
-        servise.create_file(self.chat_file)
+        create_file(self.chat_file)
 
     def get_chat_text(self) -> str:
         """
@@ -54,6 +96,7 @@ class Chat:
         :param msg: Текст сообщения.
         :return: Ничего.
         """
+        print(f'msg = {msg}')
         with open(self.chat_file, 'a', encoding='utf-8') as chat:
             chat.write('{name}: {text}\n'.format(
                 name=client_name,
@@ -70,7 +113,7 @@ class Server:
     def __init__(self):
         # Информация о пользователях будет храниться в текстовом файле. Строка будет иметь вид:
         # <id клиента> <имя клиента> <директория, откуда запущен скрипт клиента>\n
-        servise.create_file(self.users_info_file)
+        create_file(self.users_info_file)
         self.queue: Queue = Queue()  # Объект очереди
         self.chat: Chat = Chat()  # Объект чата
 
@@ -105,6 +148,7 @@ class Server:
         # Найдем директорию пользователя в users.txt
         user_info: tuple[str, str] = self.get_user_info(client_id)
         user_path: str = user_info[1]
+        print(user_path)
 
         path_false: str = os.path.join(user_path, f'{client_id}_False.txt')
         path_true: str = os.path.join(user_path, f'{client_id}_True.txt')
@@ -164,8 +208,8 @@ class Server:
             client_id: int = int(command_info[0])
             command_id: int = int(command_info[1])
             msg: str = ''
-            if len(command_info) == 3:
-                msg += command_info[2]
+            if len(command_info) >= 3:
+                msg += ' '.join(command_info[2:])
 
             # Команда 1 - получить текст чата.
             # Команда 2 - написать новое сообщение.
@@ -179,3 +223,4 @@ class Server:
 
 
 server: Server = Server()
+server.loop()

@@ -36,7 +36,7 @@ def write_logs(persons_info: list[str],
                 if not (fields[2].isdigit() and 10 <= int(fields[2]) <= 99):
                     raise ValueError('Поле «Возраст» НЕ является числом от 10 до 99')
             except (IndexError, NameError, SyntaxError, ValueError) as exc:
-                bad_logs.write(f'{info}{'\t' * 4}{str(exc)}\n')
+                bad_logs.write(f"{info}{'\t' * 4}{str(exc)}\n")
             else:
                 good_logs.write(f'{info}\n')
 

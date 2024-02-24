@@ -3,6 +3,7 @@
 """
 import os
 import time
+from service import servise
 
 
 class Client:
@@ -43,6 +44,9 @@ class Client:
         self.name: str = user_name
         self.server_dir: str = server_path
 
+        # Создадим файл <id клиента>_False.txt - в нем будет храниться полученная от сервера информация.
+        servise.create_file(f'{self.id}_False.txt')
+
         # Сохраним информацию о новом клиенте в users.txt
         while True:
             try:
@@ -57,8 +61,84 @@ class Client:
             else:
                 break
 
+    def set_command(self, *args):
+        """
+        Метод отправляет запрос серверу. Так как количество параметров для команды может быть различным,
+        то используется *args.
+        :param args: Параметры команды
+        :return: Ничего.
+        """
+        # Соберем текст команды
+        # Команда имеет вид: <id клиента> <id команды> <текст сообщения (необязательно)>\n
+        command_params: list[str] = [str(self.id)]
+        command_params.extend([str(args[i_item] for i_item in args)])
 
-print()
+        command: str = ' '.join(command_params)
+
+        # Команду нужно добавить в очередь в файл queue.txt в директории сервера. Так как этот файл может быть открыт
+        # сервером, то будем пробовать его открыть, пока не откроется
+        while True:
+            try:
+                with open(os.path.join(self.server_dir, self.queue_file), 'a', encoding='utf-8') as queue:
+                    queue.write(f'{command}\n')
+            except IOError:
+                time.sleep(0.1)
+            else:
+                break
+
+    def get_data(self) -> str:
+        """
+        Метод возвращает полученную от сервера информацию. По условию задачи - это текст чата.
+        :return: Полученную информацию.
+        """
+        # Сервер сохраняет информацию в директории клиента в файле <id клиента>_True.txt. Считаем ее и переименуем файл
+        # в <id клиента>_False.txt
+        # Будем проверять наличие файла <id клиента>_True.txt и пытаться его открыть, пока не откроем
+        server_data: str = ''
+
+        while True:
+            try:
+                with open(f'{self.id}_True.txt', 'r', encoding='utf-8') as data:
+                    server_data += data.read()
+
+                # Переименуем файл
+                os.rename(f'{self.id}_True.txt', f'{self.id}_False.txt')
+            except IOError:
+                time.sleep(0.1)
+            else:
+                break
+
+        return server_data
+
+    def loop(self):
+        """
+        Метод, отвечающий за основную работу клиента. Работает в бесконечном цикле.
+        :return: Ничего.
+        """
+        while True:
+            while True:
+                try:
+                    # Спросим у пользователя, какую команду выполнить
+                    command_id: int = int(input('Введите команду: (1 - получить текст чата;'
+                                                ' 2 - написать новое сообщение)\n'))
+                    # Если введена несуществующая команда, выбросим исключение
+                    if command_id not in ['1', '2']:
+                        raise ValueError(f'{command_id} - такой команды не существует!')
+                except ValueError as exc:
+                    print(exc)
+                else:
+                    break
+
+            # Запросим выбранную команду у сервера и, если надо - получим от него данные (точнее напечатаем в консоли)
+            msg_text: str = ''
+            if command_id == 2:
+                msg_text += input('Введите сообщение: ')
+                self.set_command(command_id, msg_text)
+            else:
+                self.set_command(command_id)
+                print(self.get_data())
+
+
 client: Client = Client(
     server_path=os.path.abspath(''),
     user_name='Vova'

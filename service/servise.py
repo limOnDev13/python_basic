@@ -13,11 +13,24 @@ def generate_words(number_words: int,
     :return: Список сгенерированных слов.
     """
     return [
-        ''.join([(random.choice(ascii_uppercase) if num_let == 0 else
+        ''.join([(random.choice(ascii_uppercase) if first_is_upper and num_let == 0 else
                   random.choice(ascii_lowercase))
                  for num_let in range(random.randint(1, 10))])
         for _ in range(number_words)
     ]
+
+
+def generate_word(first_is_upper: bool = True) -> str:
+    """
+    Генерирует одно слово.
+    :param first_is_upper: Если True - первая буква заглавная, иначе - строчная
+    :return: Сгенерированное слово.
+    """
+    return ''.join([
+        (random.choice(ascii_uppercase) if first_is_upper and num_let == 0 else
+         random.choice(ascii_lowercase))
+        for num_let in range(random.randint(1, 10))
+    ])
 
 
 def save_words(words: list[str], file_name: str,

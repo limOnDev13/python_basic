@@ -2,7 +2,7 @@ import random
 import datetime
 
 # Изменяя N можно управлять количеством строк в файле
-N = 100_000_000
+N = 100_000
 
 
 error_names = ['ValueError', 'ArithmeticError', 'AssertionError', 'ImportError', 'NameError', 'OSError']

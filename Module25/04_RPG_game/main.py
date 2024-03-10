@@ -7,12 +7,14 @@ def one_year_of_war():
     # Ниже приведен пример составления команды
     # Вы можете изменять состав команды, НО размер команды не должен быть более 5.
 
-    tank = Tank("Танк Пётр")
-    attacker = Attacker("Убийца Ольга")
-    second_attacker = Attacker("Убийца Траур")
-    healer = Healer("Монах Игнат")
-    second_healer = Healer("Монах Ирэна")
-    good_team = [tank, attacker, second_attacker, second_healer, healer]
+    tank1 = Tank("Танк Пётр")
+    tank2 = Tank("Танк Вова")
+    attacker1 = Attacker("Убийца Ольга")
+    attacker2 = Attacker("Убийца Траур")
+    attacker3 = Attacker('Убийца Петруха')
+    healer1 = Healer("Монах Игнат")
+    healer2 = Healer("Монах Вася")
+    good_team = [tank1, attacker1, attacker2, healer1, healer2]
 
     # Код ниже изменять нельзя!
 

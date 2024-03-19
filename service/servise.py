@@ -1,6 +1,8 @@
 import random
 from string import ascii_lowercase, ascii_uppercase
-from typing import Literal, Callable
+from typing import Literal, Callable, Any
+import functools
+import time
 
 
 def generate_words(number_words: int,
@@ -86,3 +88,30 @@ def create_file(file_name: str):
             return
     except FileExistsError:
         return
+
+
+def timer(func: Callable) -> Callable:
+    """
+    Декоратор. Выводит в консоль время работы функции.
+    :param func: Функция, для которой необходимо измерить время работы
+    :type func: Callable
+    :return: func без изменений
+    :rtype: Callable
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs) -> Any:
+        """
+        Обертка для func
+        :return: Обернутую func
+        :rtype: Callable
+        """
+        start: float = time.time()
+        result: Any = func(*args, **kwargs)
+        end: float = time.time()
+        print('Функция {name} проработала {sec} сек'.format(
+            name=func.__name__,
+            sec=round(end - start, 3)
+        ))
+        return result
+    return wrapper
+

@@ -27,12 +27,34 @@ def counter(func: Callable) -> Callable:
     return wrapper
 
 
+def sof_counter(func: Callable) -> Callable:
+    """
+    Декоратор - счетчик вызовов декорируемой функции. Решение подсмотрено на StackOverFlow,
+    есть пара непонятных моментов
+    :param func: Декорируемая функция
+    :type func: Callable
+    :return: обернутую func
+    :rtype: Callable
+    """
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs) -> Any:
+        """Обертка для func"""
+        wrapper.__count += 1
+        return func(*args, **kwargs)
+
+    wrapper.__count: int = 0  # Почему-то pycharm ругается на аннотацию.
+    # Пишет Non-self attribute could not be type hinted - непонятно...
+    return wrapper
+
+
+@sof_counter
 @counter
 def test1() -> None:
     """Тестовая функция"""
     pass
 
 
+@sof_counter
 @counter
 def test2() -> None:
     """Тестовая функция"""
@@ -44,3 +66,5 @@ test1()
 test2()
 test2()
 test2()
+print(f'test1.__count = {test1.__count}')
+print(f'test2.__count = {test2.__count}')  # А здесь ругается, что Cannot find reference '__count' in '(...) -> Any'

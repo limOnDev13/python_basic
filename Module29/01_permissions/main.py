@@ -1,24 +1,43 @@
-from typing import Iterator, Literal, TextIO, Optional
-from contextlib import contextmanager
+import functools
+from typing import Callable, Any, Optional
 
 
-@contextmanager
-def file(name: str, mode: Literal['r', 'w', 'a']) -> Iterator:
-    required_file: Optional[TextIO] = None
-
-    try:
-        required_file = open(name, mode, encoding='utf-8')
-        yield required_file
-    except FileNotFoundError:
-        yield open(name, 'w', encoding='utf-8')
-    except Exception as exc:
-        print(exc)
-    finally:
-        if required_file is not None:
-            required_file.close()
+USER_PERMISSIONS: list[str] = ['admin']
 
 
-with file('test_file.txt', 'w') as f:
-    f.write()
+def check_permission(user_name: str) -> Callable:
+    """
+    Декоратор с аргументом. Проверяет права доступа
+    :param user_name: Имя пользователя
+    :type user_name: str
+    :return: Обернутый декоратор
+    :rtype: Callable
+    """
+    def decorator(func: Callable) -> Callable:
+        """Обертка для функции"""
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs) -> Optional[Any]:
+            if user_name in USER_PERMISSIONS:
+                return func(*args, **kwargs)
+            else:
+                print('У пользователя {name} недостаточно прав, чтобы выполнить функцию {func_name}'.format(
+                    name=user_name,
+                    func_name=func.__name__
+                ))
+                return None
+        return wrapper
+    return decorator
 
-print('Код все еще работает...')
+
+@check_permission('admin')
+def delete_site():
+    print('Удаляем сайт')
+
+
+@check_permission('user_1')
+def add_comment():
+    print('Добавляем комментарий')
+
+
+delete_site()
+add_comment()

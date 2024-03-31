@@ -1,4 +1,25 @@
-# TODO здесь писать код
+from typing import Callable, Any
+from time import time
+
+
+class LoggerDecorator:
+    def __init__(self, func: Callable) -> None:
+        self.__func: Callable = func
+        self.__start: float = time()
+
+    def __call__(self, *args, **kwargs) -> Any:
+        res: Any = self.__func(*args, **kwargs)
+
+        print('\n--------------------------------\n'
+              'Функция {func}:\n'
+              'Аргументы:\n\targs: {arg}\n\tkwargs: {kwarg}\n'
+              'Время выполнения: {time}s'.format(
+                func=self.__func.__name__,
+                arg=args,
+                kwarg=kwargs,
+                time=time() - self.__start
+              ))
+        return res
 
 
 @LoggerDecorator

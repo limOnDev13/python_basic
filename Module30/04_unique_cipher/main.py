@@ -1,4 +1,13 @@
-# TODO здесь писать код
+from collections import Counter
+
+
+def count_unique_characters(text: str) -> int:
+    hist: Counter = Counter()
+
+    for sym in text:
+        hist[sym] += 1
+
+    return len(list(filter(lambda symbol: hist[symbol] == 1, hist)))
 
 
 # Пример использования:

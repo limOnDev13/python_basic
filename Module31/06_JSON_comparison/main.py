@@ -1,10 +1,8 @@
-from typing import Optional
 import json
 
 
 def find_differences(old_dict: dict, new_dict: dict,
-                     req_params: list[str], result_dict: dict,
-                     current_path: Optional[str]) -> None:
+                     req_params: list[str], result_dict: dict) -> None:
     """
     Функция для рекурсивного обхода словарей и поиска отличий по параметрам из списка
     :param old_dict: Старый словарь
@@ -18,11 +16,17 @@ def find_differences(old_dict: dict, new_dict: dict,
     то по тому же пути сохраняются различия и в выходной словарь.
     Т.е. если old_dict['a']['b'] = 1, new_dict['a']['b'] = 2, то result_dict['a']['b'] = 2
     :type result_dict: dict
-    :param current_path: Путь до текущего параметра.
-    Необходим для корректной работы рекурсии и сохранения результата в словарь
-    :type current_path: Optional[str]
     :return: None (словарь с результатами тащится внутри входных параметров к этому методу)
     """
+    for key, value in old_dict.items():
+        if key in req_params:
+            if str(value) == str(new_dict[key]):
+                result_dict[key] = None
+            else:
+                result_dict[key] = new_dict[key]
+        elif isinstance(value, dict):
+            result_dict[key] = dict()
+            find_differences(old_dict[key], new_dict[key], req_params, result_dict[key])
 
 
 def compare(old_file: str, new_file: str, req_params: list[str]) -> dict:
@@ -41,11 +45,20 @@ def compare(old_file: str, new_file: str, req_params: list[str]) -> dict:
     то выходной словарь может иметь вложенные словари (вроде пути до измененного параметра)
     :rtype: dict
     """
-    with open(old_file, 'r') as old_json:
-        with open(new_file, 'r') as new_json:
+    with open(old_file, 'r', encoding='utf-8') as old_json:
+        with open(new_file, 'r', encoding='utf-8') as new_json:
             old_dict: dict = json.load(old_json)
             new_dict: dict = json.load(new_json)
+            result_dict: dict = dict()
 
-            # Будем рекурсивно искать необходимые параметры
-            for key, value in old_dict.values():
-                pass
+            find_differences(old_dict, new_dict, req_params, result_dict)
+
+            print(result_dict)
+            with open('result.json', 'w', encoding='utf-8') as result_file:
+                json.dump(result_dict, result_file, indent=4)
+            return result_dict
+
+
+if __name__ == '__main__':
+    diff_list: list[str] = ["services", "staff", "datetime"]
+    compare(old_file='json_old.json', new_file='json_new.json', req_params=diff_list)

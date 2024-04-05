@@ -2,7 +2,7 @@ import json
 
 
 def find_differences(old_dict: dict, new_dict: dict,
-                     req_params: list[str], result_dict: dict) -> None:
+                     req_params: list[str], result_dict: dict) -> bool:
     """
     Функция для рекурсивного обхода словарей и поиска отличий по параметрам из списка
     :param old_dict: Старый словарь
@@ -16,17 +16,26 @@ def find_differences(old_dict: dict, new_dict: dict,
     то по тому же пути сохраняются различия и в выходной словарь.
     Т.е. если old_dict['a']['b'] = 1, new_dict['a']['b'] = 2, то result_dict['a']['b'] = 2
     :type result_dict: dict
-    :return: None (словарь с результатами тащится внутри входных параметров к этому методу)
+    :return: True, если в данной ветке найдены изменения в отслеживаемых параметрах
+    :rtype: bool
     """
+    have_difference: bool = False
+
     for key, value in old_dict.items():
         if key in req_params:
-            if str(value) == str(new_dict[key]):
-                result_dict[key] = None
-            else:
+            if str(value) != str(new_dict[key]):
                 result_dict[key] = new_dict[key]
+                have_difference = True
         elif isinstance(value, dict):
-            result_dict[key] = dict()
-            find_differences(old_dict[key], new_dict[key], req_params, result_dict[key])
+            result_dict[key] = dict()  # Это строка может добавлять лишние пустые словари в результат
+            if not find_differences(old_dict[key], new_dict[key], req_params, result_dict[key]):
+                # Если отличий не нашли, то можно удалить пустой словарь
+                result_dict.pop(key)
+            else:
+                # Если же нашли, то нужно сообщить, что в этой ветке есть изменения
+                have_difference = True
+
+    return have_difference
 
 
 def compare(old_file: str, new_file: str, req_params: list[str]) -> dict:
